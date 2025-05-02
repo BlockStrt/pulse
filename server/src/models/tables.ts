@@ -1,10 +1,15 @@
+import sql from "./db";
 import { createCrimesTable } from "./queries";
 
 
-createCrimesTable().then(()=>{
+
+
+//error handle
+ createCrimesTable().then(()=>{
   console.log("table created!")
   process.exit();  
 }).catch((err)=>{
-    console.log("you fucked up creating table", err)
-    process.exit(1)
+    console.log("table not created", err)
+    process.exit(1) // make sure process exits with an errorcode
 })
+

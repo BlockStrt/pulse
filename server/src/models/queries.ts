@@ -22,7 +22,7 @@ interface crimeTable {
 export async function createCrimesTable() {
     await sql`
       CREATE TABLE IF NOT EXISTS crimes (
-        id BIGINT PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         name TEXT,
         date TIMESTAMP,
         block TEXT,
@@ -39,3 +39,5 @@ export async function createCrimesTable() {
       )
     `;
   }
+
+  

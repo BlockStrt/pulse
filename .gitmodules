@@ -1,0 +1,3 @@
+[submodule "server/server/nest-backend"]
+	path = server/server/nest-backend
+	url = git@github.com:BlockStrt/pulse.git
