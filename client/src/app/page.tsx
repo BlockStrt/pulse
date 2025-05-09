@@ -4,6 +4,7 @@ import Image from "next/image";
 import GMap from './components/Gmap';
 import DataPoint from './components/Gmap'
 import Sidebar from "./components/Sidebar";
+import Searchbutton from './components/Searchbutton';
 
 export default function Home() {
   const [data, setData] = useState<[number, number][]>([]);
@@ -30,6 +31,9 @@ export default function Home() {
           <Sidebar/>
         </div>
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+      <div className='z-30 h-full top-10 fixed '>
+      <Searchbutton/>
+        </div>  
       <GMap />
         
       </main>
