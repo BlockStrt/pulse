@@ -1,5 +1,5 @@
 // components/CrimeMap.tsx
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import Map from 'react-map-gl/maplibre';
 import {DeckGL} from '@deck.gl/react';
 import {AmbientLight, PointLight, LightingEffect} from '@deck.gl/core';
@@ -25,8 +25,8 @@ type Props = {
 };
 
 const INITIAL_VIEW_STATE = {
-  longitude: -1.415727,
-  latitude: 52.232395,
+  longitude: -87.536486883,
+  latitude: 41.71132756,
   zoom: 6.6,
   minZoom: 5,
   maxZoom: 15,
@@ -47,19 +47,48 @@ function getTooltip({object}: any) {
   ${count} Incidents`;
   }
 
-export default function GMap({ data }: Props) {
+export default function GMap() {
+  const [crimeCoordinates, setCrimeCoordinates] = useState<any[]>([]);
+
+
+  useEffect(() => {
+    const getCrimeData = async () => {
+      try {
+        // Fetch the crime data from your backend
+        const response = await fetch('http://localhost:8000/crimes/crimes'); // Make sure this URL matches your route
+        const data = await response.json();
+        console.log("Fetched data:", data);
+
+        // Assuming the response has an array of crime coordinates
+        const coords = data.map((item: { latitude: number, longitude: number }) => [
+          item.longitude, item.latitude
+
+        ]);
+
+        setCrimeCoordinates(coords);
+      } catch (error) {
+        // console.error("Error fetching crime data:", error);
+      }
+    };
+
+    getCrimeData();
+  }, []);
+
+  // console.log("Crime Coordinates:", crimeCoordinates);
+  
+
   const layers = [
     new HexagonLayer<DataPoint>({
       id: 'heatmap',
       gpuAggregation: true,
-      coverage: 1,
-      data,
-      elevationRange: [0, 3000],
-      elevationScale: data && data.length ? 50 : 0,
+      coverage: 0.2,
+      data: crimeCoordinates,
+      elevationRange: [50, 500],
+      elevationScale: crimeCoordinates && crimeCoordinates.length ? 50 : 0,
       extruded: true,
       getPosition: d => d,
       pickable: true,
-      radius: 1000,
+      radius: 900,
       upperPercentile: 100,
       material: {
         ambient: 0.64,
@@ -69,6 +98,7 @@ export default function GMap({ data }: Props) {
       },
       transitions: { elevationScale: 3000 },
     }),
+    
   ];
 
   return (
@@ -85,3 +115,5 @@ export default function GMap({ data }: Props) {
     </DeckGL>
   );
 }
+
+
