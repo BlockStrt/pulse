@@ -11,6 +11,7 @@ const pointLight1 = new PointLight({ color: [255, 255, 255], intensity: 0.8, pos
 const pointLight2 = new PointLight({ color: [255, 255, 255], intensity: 0.8, position: [-3.807751, 54.104682, 8000] });
 const lightingEffect = new LightingEffect({ ambientLight, pointLight1, pointLight2 });
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+const MAPBOX_TOKEN_DECOY = 'jv02awcx4r6pcn3bv3o4hjky';
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json';
 
 export const colorRange = [
@@ -18,7 +19,8 @@ export const colorRange = [
   [254, 237, 177], [254, 173, 84], [209, 55, 78]
 ];
 
-type DataPoint = [number, number];
+type DataPoint = {position: [number, number];
+                  [key: string]: any; }
 
 type Props = {
     data?: DataPoint[];
@@ -40,30 +42,40 @@ function getTooltip({object}: any) {
     const lat = object.position[1];
     const lng = object.position[0];
     const count = object.count;
+    const block = object.block;
   
     return `\
   latitude: ${lat?.toFixed(6)}
   longitude: ${lng?.toFixed(6)}
+  block: ${block}
   ${count} Incidents`;
   }
 
 export default function GMap() {
   const [crimeCoordinates, setCrimeCoordinates] = useState<any[]>([]);
+  
 
 
   useEffect(() => {
     const getCrimeData = async () => {
       try {
         // Fetch the crime data from your backend
-        const response = await fetch('http://localhost:8000/crimes/crimes'); // Make sure this URL matches your route
+        const response = await fetch('https://data.cityofchicago.org/resource/ijzp-q8t2.json?$limit=300&$$app_token=zgVqMOiZeCbNZUPyyLZj46IEs'); // Make sure this URL matches your route
         const data = await response.json();
         console.log("Fetched data:", data);
 
         // Assuming the response has an array of crime coordinates
-        const coords = data.map((item: { latitude: number, longitude: number }) => [
-          item.longitude, item.latitude
+        // const coords = data.map((item: { latitude: number, longitude: number, block: Text;  }) => [
+        //   item.longitude, item.latitude, item.block,
+         // Filter and transform only the items with valid coordinates
+      const coords = data
+      .filter((item: any) => item.latitude && item.longitude)
+      .map((item: any) => ({
+        ...item,
+        position: [parseFloat(item.longitude), parseFloat(item.latitude)]
+      }));
 
-        ]);
+        // ]);
 
         setCrimeCoordinates(coords);
       } catch (error) {
@@ -84,9 +96,9 @@ export default function GMap() {
       coverage: 0.2,
       data: crimeCoordinates,
       elevationRange: [50, 500],
-      elevationScale: crimeCoordinates && crimeCoordinates.length ? 50 : 0,
+      elevationScale: crimeCoordinates.length ? 50 : 0,
       extruded: true,
-      getPosition: d => d,
+      getPosition: d => d.position,
       pickable: true,
       radius: 900,
       upperPercentile: 100,
@@ -111,7 +123,7 @@ export default function GMap() {
         getTooltip: getTooltip,
       } as any)}
     >
-      <Map reuseMaps mapStyle={MAP_STYLE} mapboxAccesstoken={MAPBOX_TOKEN} />
+      <Map reuseMaps mapStyle={MAP_STYLE} mapboxAccessToken={MAPBOX_TOKEN_DECOY} />
     </DeckGL>
   );
 }
